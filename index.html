@@ -91,12 +91,14 @@
                 UPLOADER = new plupload.Uploader({
                     runtimes: 'html5,flash,silverlight,html4',                     
                     browse_button: 'pickFiles',
-                    container: document.getElementById('uploadContainer'),                    
+                    container: document.getElementById('uploadContainer'), 
+                    drop_element: document.getElementById('uploadContainer'),
                     url: BASEURL + '/upload/ajax',
                     chunk_size: '1mb',
                     unique_names: true,                    
                     filters: {
                         max_file_size: SITE_MAX_UPLOAD_SIZE,
+                        prevent_duplicates: true,
                         mime_types: [
 							{
 								title: 'Audio', 
