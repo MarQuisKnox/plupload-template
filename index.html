@@ -262,15 +262,14 @@
                             // Called when error occurs
                         	if( DEBUG_UPLOAD ) {
                         	    console.info('[Error] ', args);
+                        	    console.warn( 'Error #', args.code + ': ' + args.message );
                         	}
-
-                        	console.warn( 'Error #', err.code + ': ' + err.message );
                         }
                     }                    
                 });
                  
                 UPLOADER.init();
-				// END:		Plupload
+		// END:		Plupload
             });
         </script>        
     </body>
