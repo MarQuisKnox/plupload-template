@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Plupload Template &mdash; @MarQuisKnox (GitHub)</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/bootstrap/bootstrap.css" media="screen">
+        <link rel="stylesheet" href="css/font-awesome.min.css">
+        
+        <script type="text/javascript">
+            var BASEURL                  = '<?php echo PROTOCOL_RELATIVE_URL; ?>';
+            var DEFAULT_PRELOADER_IMAGE  = '<?php echo SITE_DEFAULT_PRELOADER_IMAGE_PATH; ?>'; 
+			      var UPLOADER;
+      			var SITE_MAX_UPLOAD_SIZE     = '<?php echo SITE_MAX_UPLOAD_SIZE; ?>';
+      			var SITE_ALLOWED_FILE_TYPES  = '<?php echo SITE_ALLOWED_FILE_TYPES; ?>';
+      			var DEBUG_UPLOAD             = false;
+        </script>
+    </head>
+    <body>
+        <div class="navbar navbar-default navbar-fixed-top">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a href="<?php echo PROTOCOL_RELATIVE_URL; ?>" class="navbar-brand"><i class="fa fa-music"></i></a>
+                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                </div>
+                <div class="navbar-collapse collapse" id="navbar-main">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            <a href="<?php echo PROTOCOL_RELATIVE_URL; ?>/explore">Explore</a>
+                        </li>
+                        <?php if( ( SITE_ALLOW_TEMPLATE_CHANGE == 1 ) AND ( !empty( $siteThemes ) ) ): ?>
+                            <li class="dropdown">
+                                <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="themes"><?php echo translate('themes'); ?> <span class="caret"></span></a>
+                                <ul class="dropdown-menu" aria-labelledby="themes">
+                                    <?php foreach( $siteThemes AS $key => $value ): ?>
+                                        <?php if( $value['name'] == $currentTheme ): ?>
+                                            <li>
+                                                <a class="themeChange" data-theme="<?php echo $value['name']; ?>" href="#"><?php echo $value['display_name']; ?></a>
+                                            </li>
+                                            <li class="divider"></li>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                    <?php foreach( $siteThemes AS $key => $value ): ?>
+                                        <li>
+                                            <a class="themeChange" data-theme="<?php echo $value['name']; ?>" href="#"><?php echo $value['display_name']; ?></a>
+                                        </li>
+                                    <?php endforeach; ?>                                    
+                                </ul>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+    
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="dropDownHelp">
+                                <i class="fa fa-life-ring"></i> <?php echo translate('help'); ?> <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="dropDownHelp">
+                                <li>
+                                    <a id="triggerAboutDialog" href="#"><?php echo translate('about'); ?></a>
+                                </li> 
+                                <?php if( (int)@$_SESSION['user']['logged_in'] != 1 ): ?>                           
+                                    <li>
+                                        <a href="#"><?php echo translate('forgotten_password'); ?></a>
+                                    </li>
+                                <?php endif; ?>
+                            </ul>
+                        </li>                    
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="dropDownLogin">
+                                <i class="fa fa-user"></i> <?php if( (int)@$_SESSION['user']['logged_in'] == 1 ): ?><?php echo $_SESSION['user']['username']; ?><?php else: ?> Guest <?php endif; ?> <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="dropDownLogin">
+                                <?php if( (int)@$_SESSION['user']['logged_in'] == 1 ): ?>
+                                    <li>
+                                        <a href="<?php echo PROTOCOL_RELATIVE_URL; ?>/logout"><?php echo translate('logout'); ?></a>
+                                    </li>                            
+                                <?php else: ?>
+                                    <li>
+                                        <a href="<?php echo PROTOCOL_RELATIVE_URL; ?>/login"><?php echo translate('login'); ?></a>
+                                    </li>                            
+                                    <li>
+                                        <a href="<?php echo PROTOCOL_RELATIVE_URL; ?>/register"><?php echo translate('register'); ?></a>
+                                    </li>                                
+                                <?php endif; ?>
+                            </ul>
+                        </li> 
+                    </ul>   
+                </div>
+            </div>
+        </div>
+        
+        <div class="container-fluid">    
+        
+            <div style="margin-top: 100px;">
+                <div class="container" id="loginContainer">
+                    <div class="page-header">
+                        <h1><?php echo translate('upload'); ?></h1>
+                    </div>   
+                    
+                    <div>
+                        <div id="fileList"></div> 
+                        
+                        <div id="uploadContainer" style="margin-top: 20px;">
+                            <button id="pickFiles" class="btn btn-primary">
+								<i class="fa fa-volume-up"></i> <?php echo translate('select'); ?>
+							</button>
+                            <button id="uploadFiles" class="btn btn-default">
+								<i class="fa fa-cloud-upload"></i> <?php echo translate('upload'); ?>
+							</button>
+                        </div>                  
+                    </div>
+                </div>                          
+            </div>
+        </div>
+        
+        <script type="text/javascript" src="<?php echo PROTOCOL_RELATIVE_URL; ?>/js/phpjs.js"></script>
+        <script type="text/javascript" src="<?php echo PROTOCOL_RELATIVE_URL; ?>/js/jquery-1.8.3.min.js"></script>
+        <script type="text/javascript" src="<?php echo PROTOCOL_RELATIVE_URL; ?>/js/jquery-ui-1.9.2.custom.min.js"></script>
+        <script type="text/javascript" src="<?php echo PROTOCOL_RELATIVE_URL; ?>/js/jquery.imgpreload.min.js"></script>
+        <script type="text/javascript" src="<?php echo PROTOCOL_RELATIVE_URL; ?>/js/jquery.blockUI.js"></script>
+        <script type="text/javascript" src="<?php echo PROTOCOL_RELATIVE_URL; ?>/js/jquery.blockUI.defaults.js"></script>
+        <script type="text/javascript" src="<?php echo PROTOCOL_RELATIVE_URL; ?>/js/custom.js?<?php rand(); ?>"></script>
+        <script type="text/javascript" src="<?php echo PROTOCOL_RELATIVE_URL; ?>/js/jquery.observor.js?<?php rand(); ?>"></script>
+        <script type="text/javascript" src="<?php echo PROTOCOL_RELATIVE_URL; ?>/js/bootstrap/bootstrap.min.js"></script>
+        <script type="text/javascript" src="<?php echo PROTOCOL_RELATIVE_URL; ?>/js/bootstrap/extensions/bootbox/bootbox.js"></script>
+        <script type="text/javascript" src="<?php echo PROTOCOL_RELATIVE_URL; ?>/js/jquery.cookie.js"></script>
+		    <script type="text/javascript" src="<?php echo PROTOCOL_RELATIVE_URL; ?>/js/plupload/moxie.js"></script>
+        <script type="text/javascript" src="<?php echo PROTOCOL_RELATIVE_URL; ?>/js/plupload/plupload.dev.js"></script>
+        
+        <script type="text/javascript">
+            $(document).ready(function() {
+				        // START:	Plupload
+                UPLOADER = new plupload.Uploader({
+                    runtimes: 'html5,flash,silverlight,html4',                     
+                    browse_button: 'pickFiles',
+                    container: document.getElementById('uploadContainer'),                    
+                    url: BASEURL + '/upload/ajax',
+                    chunk_size: '1mb',
+                    unique_names: true,                    
+                    filters: {
+                        max_file_size: SITE_MAX_UPLOAD_SIZE,
+                        mime_types: [
+							{
+								title: 'Audio', 
+								extensions: SITE_ALLOWED_FILE_TYPES
+							}
+                        ]
+                    },
+                 
+                    // Flash settings
+                    flash_swf_url: '/js/plupload/Moxie.swf',
+                 
+                    // Silverlight settings
+                    silverlight_xap_url: '/js/plupload/Moxie.xap',
+
+                    // PreInit events, bound before any internal events
+                    preinit : {
+                        Init: function(up, info) {
+                            if( DEBUG_UPLOAD ) {                                
+                                console.info('[Init]', 'Info:', info, 'Features:', up.features);
+                            }
+                        },
+             
+                        UploadFile: function(up, file) {
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[UploadFile]', file);
+                        	}
+             
+                            // You can override settings before the file is uploaded
+                            // up.setOption('url', 'upload.php?id=' + file.id);
+                            // up.setOption('multipart_params', {param1 : 'value1', param2 : 'value2'});
+                        }
+                    },
+
+                    // Post init events, bound after the internal events
+                    init : {
+                        PostInit: function() {
+                            // Called after initialization is finished and internal event handlers bound
+                            if( DEBUG_UPLOAD ) {                                
+                                console.info('[PostInit]');
+                            }
+                             
+                            $('#uploadFiles').click(function(event) {
+                                UPLOADER.start();
+                                return false;
+                            });
+                        },
+             
+                        Browse: function(up) {
+                            // Called when file picker is clicked
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[Browse]');
+                        	}
+                        },
+             
+                        Refresh: function(up) {
+                            // Called when the position or dimensions of the picker change
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[Refresh]');
+                        	}
+                        },
+              
+                        StateChanged: function(up) {
+                            // Called when the state of the queue is changed
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[StateChanged]', up.state == plupload.STARTED ? "STARTED" : "STOPPED");
+                        	}
+                        },
+              
+                        QueueChanged: function(up) {
+                            // Called when queue is changed by adding or removing files
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[QueueChanged]');
+                        	}
+                        },
+             
+                        OptionChanged: function(up, name, value, oldValue) {
+                            // Called when one of the configuration options is changed
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[OptionChanged]', 'Option Name: ', name, 'Value: ', value, 'Old Value: ', oldValue);
+                        	}
+                        },
+             
+                        BeforeUpload: function(up, file) {
+                            // Called right before the upload for a given file starts, can be used to cancel it if required
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[BeforeUpload]', 'File: ', file);
+                        	}
+                        },
+              
+                        UploadProgress: function(up, file) {
+                            // Called while file is being uploaded
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[UploadProgress]', 'File:', file, "Total:", up.total);
+                        	}
+
+                            document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";                        	
+                        },
+             
+                        FileFiltered: function(up, file) {
+                            // Called when file successfully files all the filters
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[FileFiltered]', 'File:', file);
+                        	}
+                        },
+              
+                        FilesAdded: function(up, files) {
+                            // Called when files are added to queue
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[FilesAdded]');
+                        	}
+                        	
+                            plupload.each(files, function(file) {
+                            	if( DEBUG_UPLOAD ) {
+                            		console.info('  File:', file);
+                            	}
+                            	
+                                $('#fileList').append('<div id="' + file.id + '"><i class="fa fa-volume-off"></i> ' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></div>');
+                            });
+                        },
+              
+                        FilesRemoved: function(up, files) {
+                            // Called when files are removed from queue
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[FilesRemoved]');
+                        	}
+              
+                            plupload.each(files, function(file) {
+                            	if( DEBUG_UPLOAD ) {
+                            	    console.info('  File:', file);
+                            	}
+                            });
+                        },
+              
+                        FileUploaded: function(up, file, info) {
+                            // Called when file has finished uploading
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[FileUploaded] File:', file, "Info:", info);
+                        	}
+                        },
+              
+                        ChunkUploaded: function(up, file, info) {
+                            // Called when file chunk has finished uploading
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[ChunkUploaded] File:', file, "Info:", info);
+                        	}
+                        },
+             
+                        UploadComplete: function(up, files) {
+                            // Called when all files are either uploaded or failed
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[UploadComplete]');
+                        	}
+                        },
+             
+                        Destroy: function(up) {
+                            // Called when uploader is destroyed
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[Destroy] ');
+                        	}
+                        },
+              
+                        Error: function(up, args) {
+                            // Called when error occurs
+                        	if( DEBUG_UPLOAD ) {
+                        	    console.info('[Error] ', args);
+                        	}
+
+                        	console.warn( 'Error #', err.code + ': ' + err.message );
+                        }
+                    }                    
+                });
+                 
+                UPLOADER.init();
+				        // END:		Plupload
+            });
+        </script>        
+    </body>
+</html>
